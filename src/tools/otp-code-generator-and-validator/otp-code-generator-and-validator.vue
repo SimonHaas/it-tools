@@ -29,6 +29,23 @@ const [hotpValues] = computedRefreshable(
   { throttle: 500 },
 );
 
+// X6QJZ4EQNB6O4CIP
+// counter 3: 659107
+const crackHOTP = ref(0);
+
+const crackHOTPCounter = computedRefreshable(() => {
+  if (crackHOTP.value === 0) {
+    return 'Please set a HOTP to crack';
+  }
+  for (let i = 0; i < 1000; i++) {
+    if (generateHOTP({ key: secret.value, counter: i }) === crackHOTP.value) {
+      crackHOTPCounter.value = i;
+      return i;
+    }
+  }
+  return 'Not found';
+}, { throttle: 500 });
+
 const [tokens] = computedRefreshable(
   () => ({
     previous: generateTOTP({ key: secret.value, now: now.value - 30000 }),
@@ -114,6 +131,16 @@ const secretValidationRules = [
         placeholder="HOTP will be displayed here"
         mb-1
       />
+    </div>
+    <div>
+      <c-input-text
+        v-model:value="crackHOTP"
+        label="Find counter for HOTP"
+        placeholder="HOTP to find counter for..."
+        type="number"
+        mt-5
+      />
+      <p>Counter for HOTP: {{ crackHOTPCounter }}</p>
     </div>
   </div>
   <div style="max-width: 350px">
